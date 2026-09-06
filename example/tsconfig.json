@@ -1,0 +1,10 @@
+{
+  "extends": "expo/tsconfig.base",
+  "compilerOptions": {
+    "strict": true,
+    "paths": {
+      "expo-feedback-ai": ["../src/index"],
+      "expo-feedback-ai/*": ["../src/*"]
+    }
+  }
+}
