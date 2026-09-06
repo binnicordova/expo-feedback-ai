@@ -1,0 +1,12 @@
+{
+	"$schema": "./node_modules/@biomejs/biome/configuration_schema.json",
+	"files": {
+		"includes": ["src/**", "!build/**", "!node_modules/**", "!example/**"]
+	},
+	"formatter": {
+		"enabled": true
+	},
+	"assist": {
+		"enabled": true
+	}
+}

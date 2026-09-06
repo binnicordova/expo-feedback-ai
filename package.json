@@ -1,17 +1,37 @@
 {
   "name": "expo-feedback-ai",
   "version": "0.0.1",
-  "description": "let users feedbacks build your 1MUSD app with ai",
+  "author": "Binni Cordova <binni.2000.cordova@gmail.com> (binnicordova)",
+  "repository": "https://github.com/binnicordova/feedbai",
   "main": "build/index.js",
-  "types": "build/index.d.ts",
-  "scripts": {
-    "build": "node internal/module_scripts/build.js",
-    "clean": "node internal/module_scripts/clean.js",
-    "lint": "eslint src/",
-    "test": "node internal/module_scripts/test.js",
-    "prepare": "node internal/module_scripts/prepare.js",
-    "open:ios": "node internal/module_scripts/open-ios.js",
-    "open:android": "node internal/module_scripts/open-android.js"
+  "devDependencies": {
+    "@babel/core": "^7.26.0",
+    "@biomejs/biome": "2.5.12",
+    "@types/bun": "latest",
+    "@types/jest": "^29.2.1",
+    "@types/react": "~19.1.1",
+    "babel-preset-expo": "~55.0.8",
+    "expo": "^57.0.19",
+    "jest": "^29.7.0",
+    "jest-expo": "~55.0.9",
+    "react-native": "0.82.1",
+    "typescript": "^5.9.2"
+  },
+  "peerDependencies": {
+    "expo": "*",
+    "react": "*",
+    "react-native": "*"
+  },
+  "bugs": {
+    "url": "https://github.com/binnicordova/feedbai/issues"
+  },
+  "description": "let users feedbacks build your 1MUSD app with ai",
+  "homepage": "https://github.com/binnicordova/feedbai#readme",
+  "jest": {
+    "preset": "jest-expo",
+    "roots": [
+      "<rootDir>/src"
+    ]
   },
   "keywords": [
     "react-native",
@@ -19,37 +39,21 @@
     "expo-feedback-ai",
     "FeedbAI"
   ],
-  "repository": "https://github.com/binnicordova/feedbai",
-  "bugs": {
-    "url": "https://github.com/binnicordova/feedbai/issues"
-  },
-  "author": "Binni Cordova <binni.2000.cordova@gmail.com> (binnicordova)",
   "license": "MIT",
-  "homepage": "https://github.com/binnicordova/feedbai#readme",
-  "dependencies": {},
-  "devDependencies": {
-    "@babel/core": "^7.26.0",
-    "@types/jest": "^29.2.1",
-    "@types/react": "~19.1.1",
-    "babel-preset-expo": "~55.0.8",
-    "eslint": "~9.39.4",
-    "eslint-config-universe": "^15.0.3",
-    "expo": "^57.0.19",
-    "jest": "^29.7.0",
-    "jest-expo": "~55.0.9",
-    "prettier": "^3.0.0",
-    "react-native": "0.82.1",
-    "typescript": "^5.9.2"
+  "private": true,
+  "scripts": {
+    "start": "bun run build/index.js",
+    "build": "node internal/module_scripts/build.js",
+    "clean": "node internal/module_scripts/clean.js",
+    "lint": "biome format --write",
+    "test": "node internal/module_scripts/test.js",
+    "prepare": "node internal/module_scripts/prepare.js",
+    "open:ios": "node internal/module_scripts/open-ios.js",
+    "open:android": "node internal/module_scripts/open-android.js"
   },
-  "jest": {
-    "preset": "jest-expo",
-    "roots": [
-      "<rootDir>/src"
-    ]
-  },
-  "peerDependencies": {
-    "expo": "*",
-    "react": "*",
-    "react-native": "*"
+  "types": "build/index.d.ts",
+  "dependencies": {
+    "expo-application": "~57.0.2",
+    "jotai": "^2.20.3"
   }
 }
