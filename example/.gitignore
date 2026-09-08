@@ -31,7 +31,14 @@ yarn-error.*
 *.pem
 
 # local env files
+.env
 .env*.local
+functions/.env
+
+# FeedbAI autopilot scratch — the board it read, the ideas it picked, the PRs it
+# opened. Written into the working tree of a job that also commits code.
+feedbai-*.json
+feedbai-*.jsonl
 
 # typescript
 *.tsbuildinfo

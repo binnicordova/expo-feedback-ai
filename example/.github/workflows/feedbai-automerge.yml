@@ -1,0 +1,120 @@
+name: FeedbAI · Automerge
+
+# Responsibility, and nothing else:
+#
+#   1. Find open PRs labelled `feedbai` older than the hold (24h).
+#   2. Merge the ones CI has passed.
+#   3. Mark the related feedbacks `agentReleased = true`.
+#
+# The hold is the whole point of splitting this from feedbai-autopilot.yml. The
+# autopilot opens the PR and stops; for a day it sits there with ci.yml's verdict and
+# pr-preview.yml's QR on it, so anything wrong can be caught — and if nobody looks, it
+# lands anyway. Hands off by default, reviewable by exception.
+#
+# ci.yml owns the verdict (never re-run here, only respected), pr-preview.yml the
+# preview, release-update.yml the shipping (the merge below is its trigger),
+# release-build.yml the binaries, feedbai-autopilot.yml `agentBuilding` and every PR
+# this merges. So: no eas command, no call to ci.yml, and it never opens a PR.
+#
+# Three things that are not obvious and each cost a debugging cycle:
+#
+#   • FEEDBAI_GH_TOKEN, not GITHUB_TOKEN. GitHub raises no workflow run from an event
+#     caused by GITHUB_TOKEN, so a merge pushed with it never triggers
+#     release-update.yml — the idea would be marked released having shipped nowhere.
+#   • `agentReleased` removes the idea from the next published feed (buildFeed filters
+#     it, `purge` then collects the row and its votes). That is the last beat users
+#     see: asked for → being built ✦ → shipped, and gone.
+#   • No checkout. `gh` resolves the repo from GH_REPO and every write is an HTTP POST,
+#     so this job needs no working tree at all.
+#
+# Everything configurable is named once in `env:` and nothing below holds a value. All
+# constant except your app id; `min_age_hours` is an input so you can rehearse without
+# waiting a day. `on.schedule` can read none of it — GitHub parses it before any
+# context exists. Hourly, so a PR lands near its 24h mark rather than up to a day late.
+
+on:
+  schedule:
+    - cron: '17 * * * *'
+  workflow_dispatch:
+    inputs:
+      min_age_hours:
+        description: 'Override the configured hold (for testing)'
+        type: string
+        default: ''
+
+permissions:
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: feedbai-automerge
+
+env:
+  # Constants — shared with feedbai-autopilot.yml. Change them in both or in neither.
+  API_ORIGIN: https://us-central1-feedbai.cloudfunctions.net
+  LABEL: feedbai
+  BRANCH_PREFIX: feedbai/
+  MIN_AGE_HOURS: ${{ inputs.min_age_hours || '24' }}
+
+  # Yours — .github/feedbai.env.example.
+  APP_ID: ${{ vars.FEEDBAI_APP_ID }}
+
+  GH_TOKEN: ${{ secrets.FEEDBAI_GH_TOKEN }}
+  GH_REPO: ${{ github.repository }}
+
+jobs:
+  merge:
+    name: Land the ideas that have waited their hold
+    runs-on: ubuntu-latest
+    environment: ENV
+    timeout-minutes: 15
+    steps:
+      # One PR at a time, marked the moment it lands: a failure halfway through leaves
+      # what already merged correctly recorded rather than losing the whole batch.
+      - name: 🔀 Merge due PRs and mark them agentReleased
+        run: |
+          set -euo pipefail
+          for v in APP_ID GH_TOKEN; do
+            [ -n "${!v:-}" ] || { echo "::error::$v is not set — see .github/feedbai.env.example"; exit 1; }
+          done
+          # Reaches `date -d`, which reads a garbage value as "now" and would merge
+          # every open PR at once.
+          case $MIN_AGE_HOURS in ''|*[!0-9]*)
+            echo "::error::min_age_hours must be a whole number of hours, got '$MIN_AGE_HOURS'"; exit 1 ;;
+          esac
+
+          cutoff=$(date -u -d "$MIN_AGE_HOURS hours ago" +%Y-%m-%dT%H:%M:%SZ)
+          echo "### FeedbAI automerge · due before $cutoff" >> "$GITHUB_STEP_SUMMARY"
+
+          while IFS=$'\t' read -r n branch; do
+            # The autopilot names every branch `<prefix><uid>`; anything else is not
+            # ours to land, whatever the label says.
+            uid=${branch#"$BRANCH_PREFIX"}
+            if [ "$uid" = "$branch" ] || [ -z "$uid" ]; then
+              echo "- ❓ #$n \`$branch\` — not an autopilot branch, left alone" >> "$GITHUB_STEP_SUMMARY"
+              continue
+            fi
+            # ci.yml's verdict, asked for rather than assumed: branch protection may
+            # not be on, and a red PR must never be merged by a schedule. `gh pr
+            # checks` exits non-zero while anything is pending or failing.
+            # </dev/null so nothing in the loop consumes the PR list on its stdin.
+            if ! gh pr checks "$n" </dev/null >/dev/null 2>&1; then
+              echo "- ⏳ #$n — checks not green, retried next hour" >> "$GITHUB_STEP_SUMMARY"
+              continue
+            fi
+            if ! gh pr merge "$n" --squash --delete-branch </dev/null; then
+              echo "- ⏳ #$n — merge refused, retried next hour" >> "$GITHUB_STEP_SUMMARY"
+              continue
+            fi
+            # Same public endpoint and plain JSON body the module itself posts: no
+            # Firebase SDK, no service account, no cloud credentials in CI. The write
+            # is an idempotent upsert keyed on (appId, uid), and it is one field —
+            # `agentBuilding` is a separate boolean this never has to read.
+            # Built with jq, never interpolated: a uid is data off a branch name.
+            jq -nc --arg appId "$APP_ID" --arg uid "$uid" '$ARGS.named + {agentReleased: true}' \
+              | curl -sSf -X POST "$API_ORIGIN/feedbacks" -H 'Content-Type: application/json' --data-binary @- >/dev/null \
+              && echo "- ✅ #$n \`$uid\` released — it leaves the board on the next feed build" >> "$GITHUB_STEP_SUMMARY" \
+              || echo "::warning::#$n merged but $uid could not be marked agentReleased."
+          done < <(gh pr list --state open --label "$LABEL" --limit 100 \
+                     --json number,createdAt,headRefName \
+                     --jq ".[] | select(.createdAt < \"$cutoff\") | [.number, .headRefName] | @tsv")

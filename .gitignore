@@ -55,3 +55,6 @@ yarn-error.log
 
 # Expo
 .expo/*
+
+# Firebase emulator debug logs
+example/*-debug.log

@@ -1,59 +1,88 @@
 {
   "name": "expo-feedback-ai",
   "version": "0.0.1",
+  "description": "An in-app feedback board for Expo apps whose most-voted ideas get built by an AI agent on your cadence.",
   "author": "Binni Cordova <binni.2000.cordova@gmail.com> (binnicordova)",
-  "repository": "https://github.com/binnicordova/feedbai",
+  "license": "MIT",
+  "repository": "https://github.com/binnicordova/expo-feedback-ai",
+  "homepage": "https://github.com/binnicordova/expo-feedback-ai#readme",
+  "bugs": {
+    "url": "https://github.com/binnicordova/expo-feedback-ai/issues"
+  },
+  "keywords": [
+    "expo",
+    "react-native",
+    "feedback",
+    "feature-requests",
+    "roadmap",
+    "voting",
+    "ai"
+  ],
   "main": "build/index.js",
+  "types": "build/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./build/index.d.ts",
+      "default": "./build/index.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "build",
+    "src",
+    "!src/__tests__",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "build": "node internal/module_scripts/build.js",
+    "clean": "node internal/module_scripts/clean.js",
+    "prepare": "node internal/module_scripts/prepare.js",
+    "test": "jest",
+    "typecheck": "tsc --noEmit",
+    "lint": "biome check src",
+    "format": "biome format --write src"
+  },
+  "dependencies": {
+    "jotai": "^2.20.3"
+  },
+  "peerDependencies": {
+    "@react-native-async-storage/async-storage": ">=1.18.0",
+    "expo": ">=50.0.0",
+    "expo-application": ">=5.0.0",
+    "expo-constants": ">=15.0.0",
+    "react": ">=18.0.0",
+    "react-native": ">=0.73.0",
+    "react-native-safe-area-context": ">=4.0.0",
+    "react-native-svg": ">=13.0.0"
+  },
+  "peerDependenciesMeta": {
+    "expo-application": {
+      "optional": true
+    }
+  },
   "devDependencies": {
     "@babel/core": "^7.26.0",
     "@biomejs/biome": "2.5.12",
+    "@react-native-async-storage/async-storage": "2.2.0",
     "@types/bun": "latest",
     "@types/jest": "^29.2.1",
     "@types/react": "~19.1.1",
     "babel-preset-expo": "~55.0.8",
     "expo": "^57.0.19",
+    "expo-application": "~57.0.2",
     "jest": "^29.7.0",
     "jest-expo": "~55.0.9",
+    "prettier": "^3.9.6",
     "react-native": "0.82.1",
+    "react-native-safe-area-context": "~5.6.0",
+    "react-native-svg": "15.15.4",
     "typescript": "^5.9.2"
   },
-  "peerDependencies": {
-    "expo": "*",
-    "react": "*",
-    "react-native": "*"
-  },
-  "bugs": {
-    "url": "https://github.com/binnicordova/feedbai/issues"
-  },
-  "description": "let users feedbacks build your 1MUSD app with ai",
-  "homepage": "https://github.com/binnicordova/feedbai#readme",
   "jest": {
     "preset": "jest-expo",
     "roots": [
       "<rootDir>/src"
     ]
-  },
-  "keywords": [
-    "react-native",
-    "expo",
-    "expo-feedback-ai",
-    "FeedbAI"
-  ],
-  "license": "MIT",
-  "private": true,
-  "scripts": {
-    "start": "bun run build/index.js",
-    "build": "node internal/module_scripts/build.js",
-    "clean": "node internal/module_scripts/clean.js",
-    "lint": "biome format --write",
-    "test": "node internal/module_scripts/test.js",
-    "prepare": "node internal/module_scripts/prepare.js",
-    "open:ios": "node internal/module_scripts/open-ios.js",
-    "open:android": "node internal/module_scripts/open-android.js"
-  },
-  "types": "build/index.d.ts",
-  "dependencies": {
-    "expo-application": "~57.0.2",
-    "jotai": "^2.20.3"
   }
 }

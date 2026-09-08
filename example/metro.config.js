@@ -19,8 +19,9 @@ config.resolver.nodeModulesPaths = [
   path.resolve(__dirname, '../node_modules'),
 ];
 
+// Must be absolute: Metro does not resolve a relative path here.
 config.resolver.extraNodeModules = {
-  'expo-feedback-ai': '..',
+  'expo-feedback-ai': path.resolve(__dirname, '..'),
 };
 
 config.watchFolders = [path.resolve(__dirname, '..')];
