@@ -1,6 +1,6 @@
 {
   "name": "expo-feedback-ai",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "An in-app feedback board for Expo apps whose most-voted ideas get built by an AI agent on your cadence.",
   "author": "Binni Cordova <binni.2000.cordova@gmail.com> (binnicordova)",
   "license": "MIT",
